@@ -86,3 +86,102 @@ func (cli *Client) GetToken() error {
 
 	return nil
 }
+
+// Payment 결제 정보
+type Payment struct {
+	ImpUID        string `json:"imp_uid"`
+	MerchantUID   string `json:"merchant_uid"`
+	PayMethod     string `json:"pay_method"`
+	PGProvider    string `json:"pg_provider"`
+	PGTID         string `json:"pg_tid"`
+	ApplyNum      string `json:"apply_num"`
+	CardName      string `json:"card_name"`
+	CardQuota     int    `json:"card_quota"`
+	VBankName     string `json:"vbank_name"`
+	VBankNum      string `json:"vbank_num"`
+	VBankHolder   string `json:"vbank_holder"`
+	Name          string `json:"name"`
+	Amount        int64  `json:"amount"`
+	CancelAmount  string `json:"cancel_amount"`
+	BuyerName     string `json:"buyer_name"`
+	BuyerEmail    string `json:"buyer_email"`
+	BuyerTel      string `json:"buyer_tel"`
+	BuyerAddr     string `json:"buyer_addr"`
+	BuyerPostCode string `json:"buyer_postcode"`
+	CustomData    string `json:"custom_data"`
+	UserAgent     string `json:"user_agent"`
+	Status        string `json:"status"`
+	PaidAt        int64  `json:"paid_at"`
+	FailedAt      int64  `json:"failed_at"`
+	CanceledAt    int64  `json:"canceled_at"`
+	FailReason    string `json:"fail_reason"`
+	CancelReason  string `json:"cancel_reason"`
+	ReceiptURL    string `json:"receipt_url"`
+}
+
+func (cli *Client) authorization() (string, error) {
+	now := time.Now()
+
+	switch {
+	case cli.AccessToken.Token == "",
+		cli.AccessToken.Expired.IsZero(),
+		!cli.AccessToken.Expired.Before(now):
+
+		err := cli.GetToken()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return cli.AccessToken.Token, nil
+}
+
+// GetPaymentImpUID imp_uid로 결제 정보 가져오기
+//
+// GET /payments/{imp_uid}
+func (cli *Client) GetPaymentImpUID(iuid string) (Payment, error) {
+	data := struct {
+		Code     int     `json:"code"`
+		Message  string  `json:"string"`
+		Response Payment `json:"response"`
+	}{}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.iamport.kr/payments/%s", iuid), nil)
+	if err != nil {
+		return data.Response, err
+	}
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return data.Response, errors.New("iamport: invalid imp_uid")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
