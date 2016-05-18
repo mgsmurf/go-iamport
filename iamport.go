@@ -236,3 +236,82 @@ func (cli *Client) GetPaymentMerchantUID(muid string) (Payment, error) {
 
 	return data.Response, nil
 }
+
+// Status 결제 상태
+type Status string
+
+const (
+	// StatusAll 전체
+	StatusAll = "all"
+	// StatusReady 미결제
+	StatusReady = "ready"
+	// StatusPaid 결제 완료
+	StatusPaid = "paid"
+	// StatusCanceled 결제 취소
+	StatusCanceled = "canceled"
+	// StatusFailed 결제 실패
+	StatusFailed = "failed"
+)
+
+// PagedPayments 다수의 결제 정보
+type PagedPayments struct {
+	Total    int       `json:"total"`
+	Previous int       `json:"previous"`
+	Next     int       `json:"next"`
+	Payments []Payment `json:"list"`
+}
+
+// GetPaymentsStatus 결제 상태에 따른 결제 정보들 가져오기
+//
+// GET /payments/status/{payment_status}
+func (cli *Client) GetPaymentsStatus(status Status, page int) (PagedPayments, error) {
+	data := struct {
+		Code     int           `json:"code"`
+		Message  string        `json:"string"`
+		Response PagedPayments `json:"response"`
+	}{}
+
+	url := fmt.Sprintf("https://api.iamport.kr/payments/status/%s", status)
+	if page > 0 {
+		url += fmt.Sprintf("?page=%d", page)
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+
+		return data.Response, err
+	}
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return data.Response, errors.New("iamport: invalid status or page")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
