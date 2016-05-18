@@ -185,3 +185,54 @@ func (cli *Client) GetPaymentImpUID(iuid string) (Payment, error) {
 
 	return data.Response, nil
 }
+
+// GetPaymentMerchantUID merchant_uid로 결제 정보 가져오기
+//
+// GET /payments/find/{merchant_uid}
+func (cli *Client) GetPaymentMerchantUID(muid string) (Payment, error) {
+	data := struct {
+		Code     int     `json:"code"`
+		Message  string  `json:"string"`
+		Response Payment `json:"response"`
+	}{}
+
+	req, err := http.NewRequest("GET",
+		fmt.Sprintf("https://api.iamport.kr/payments/find/%s", muid), nil)
+	if err != nil {
+		return data.Response, err
+	}
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return data.Response, errors.New("iamport: invalid merchant_uid")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
