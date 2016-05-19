@@ -420,7 +420,7 @@ func (ops *CancelOptions) form() url.Values {
 
 // CancelPaymentImpUID imp_uid로 결제 취소하기
 //
-// GET /payments/cancel/{imp_uid}
+// GET /payments/cancel
 func (cli *Client) CancelPaymentImpUID(iuid string, options *CancelOptions) (Payment, error) {
 	data := struct {
 		Code     int     `json:"code"`
