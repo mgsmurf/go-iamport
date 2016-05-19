@@ -143,7 +143,7 @@ func (cli *Client) authorization() (string, error) {
 func (cli *Client) GetPaymentImpUID(iuid string) (Payment, error) {
 	data := struct {
 		Code     int     `json:"code"`
-		Message  string  `json:"string"`
+		Message  string  `json:"message"`
 		Response Payment `json:"response"`
 	}{}
 
@@ -193,7 +193,7 @@ func (cli *Client) GetPaymentImpUID(iuid string) (Payment, error) {
 func (cli *Client) GetPaymentMerchantUID(muid string) (Payment, error) {
 	data := struct {
 		Code     int     `json:"code"`
-		Message  string  `json:"string"`
+		Message  string  `json:"message"`
 		Response Payment `json:"response"`
 	}{}
 
@@ -268,7 +268,7 @@ type PagedPayments struct {
 func (cli *Client) GetPaymentsStatus(status Status, page int) (PagedPayments, error) {
 	data := struct {
 		Code     int           `json:"code"`
-		Message  string        `json:"string"`
+		Message  string        `json:"message"`
 		Response PagedPayments `json:"response"`
 	}{}
 
