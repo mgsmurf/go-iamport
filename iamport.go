@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -450,6 +451,65 @@ func (cli *Client) cancelPayment(key string, uid string, options *CancelOptions)
 
 	req, err := http.NewRequest("POST",
 		"https://api.iamport.kr/payments/cancel",
+		bytes.NewBufferString(form.Encode()))
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
+
+// Prepared 사전 등록된 결제 정보
+type Prepared struct {
+	MerchantUID string `json:"merchant_uid"`
+	Amount      int64  `json:"amount"`
+}
+
+// PreparePayment 결제 정보 사전 등록하기
+//
+// POST /payments/prepare
+func (cli *Client) PreparePayment(muid string, amount int64) (Prepared, error) {
+	data := struct {
+		Code     int      `json:"code"`
+		Message  string   `json:"message"`
+		Response Prepared `json:"response"`
+	}{}
+
+	form := url.Values{}
+	form.Set("merchant_uid", muid)
+	form.Set("amount", strconv.FormatInt(amount, 10))
+
+	req, err := http.NewRequest("POST",
+		"https://api.iamport.kr/payments/prepare",
 		bytes.NewBufferString(form.Encode()))
 	if err != nil {
 		return data.Response, err
