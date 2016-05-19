@@ -546,3 +546,56 @@ func (cli *Client) PreparePayment(muid string, amount int64) (Prepared, error) {
 
 	return data.Response, nil
 }
+
+// GetPreparedPayment 사전 등록된 결제 정보 보기
+//
+// GET /payments/prepare/{merchant_uid}
+func (cli *Client) GetPreparedPayment(muid string) (Prepared, error) {
+	data := struct {
+		Code     int      `json:"code"`
+		Message  string   `json:"message"`
+		Response Prepared `json:"response"`
+	}{}
+
+	req, err := http.NewRequest("GET",
+		fmt.Sprintf("https://api.iamport.kr/payments/prepare/%s", muid), nil)
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return data.Response, errors.New("iamport: invalid merchant_uid")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		fmt.Println(res.StatusCode)
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
