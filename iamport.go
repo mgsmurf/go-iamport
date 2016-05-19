@@ -454,6 +454,7 @@ func (cli *Client) cancelPayment(key string, uid string, options *CancelOptions)
 	if err != nil {
 		return data.Response, err
 	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	auth, err := cli.authorization()
 	if err != nil {
