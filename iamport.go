@@ -315,3 +315,69 @@ func (cli *Client) GetPaymentsStatus(status Status, page int) (PagedPayments, er
 
 	return data.Response, nil
 }
+
+// Bank 은행코드
+type Bank string
+
+const (
+	// Bank기업은행 기업은행
+	Bank기업은행 = Bank("03")
+	// Bank국민은행 국민은행
+	Bank국민은행 = Bank("04")
+	// Bank외환은행 외환은행
+	Bank외환은행 = Bank("05")
+	// Bank수협중앙회 수협중앙회
+	Bank수협중앙회 = Bank("07")
+	// Bank농협중앙회 농협중앙회
+	Bank농협중앙회 = Bank("11")
+	// Bank우리은행 우리은행
+	Bank우리은행 = Bank("20")
+	// BankSC제일은행 SC제일은행
+	BankSC제일은행 = Bank("23")
+	// Bank대구은행 대구은행
+	Bank대구은행 = Bank("31")
+	// Bank부산은행 부산은행
+	Bank부산은행 = Bank("32")
+	// Bank광주은행 광주은행
+	Bank광주은행 = Bank("34")
+	// Bank전북은행 전북은행
+	Bank전북은행 = Bank("37")
+	// Bank경남은행 경남은행
+	Bank경남은행 = Bank("39")
+	// Bank한국씨티은행 한국씨티은행
+	Bank한국씨티은행 = Bank("53")
+	// Bank우체국 우체국
+	Bank우체국 = Bank("71")
+	// Bank하나은행 하나은행
+	Bank하나은행 = Bank("81")
+	// Bank통합신한은행 통합신한은행
+	Bank통합신한은행 = Bank("88")
+	// Bank동양종합금융증권 동양종합금융증권
+	Bank동양종합금융증권 = Bank("D1")
+	// Bank현대증권 현대증권
+	Bank현대증권 = Bank("D2")
+	// Bank미래에셋증권 미래에셋증권
+	Bank미래에셋증권 = Bank("D3")
+	// Bank한국투자증권 한국투자증권
+	Bank한국투자증권 = Bank("D4")
+	// Bank우리투자증권 우리투자증권
+	Bank우리투자증권 = Bank("D5")
+	// Bank하이투자증권 하이투자증권
+	Bank하이투자증권 = Bank("D6")
+	// BankHMC투자증권 HMC투자증권
+	BankHMC투자증권 = Bank("D7")
+	// BankSK증권 SK증권
+	BankSK증권 = Bank("D8")
+	// Bank대신증권 대신증권
+	Bank대신증권 = Bank("D9")
+	// Bank하나대투증권 하나대투증권
+	Bank하나대투증권 = Bank("DA")
+	// Bank굿모닝신한증권 굿모닝신한증권
+	Bank굿모닝신한증권 = Bank("DB")
+	// Bank동부증권 동부증권
+	Bank동부증권 = Bank("DC")
+	// Bank유진투자증권 유진투자증권
+	Bank유진투자증권 = Bank("DE")
+	// Bank신영증권 신영증권
+	Bank신영증권 = Bank("DF")
+)
