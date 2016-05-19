@@ -474,3 +474,60 @@ func (cli *Client) CancelPaymentImpUID(iuid string, options *CancelOptions) (Pay
 
 	return data.Response, nil
 }
+
+// CancelPaymentMerchantUID merchant_uid로 결제 취소하기
+//
+// GET /payments/cancel
+func (cli *Client) CancelPaymentMerchantUID(muid string, options *CancelOptions) (Payment, error) {
+	data := struct {
+		Code     int     `json:"code"`
+		Message  string  `json:"message"`
+		Response Payment `json:"response"`
+	}{}
+
+	var form url.Values
+	if options != nil {
+		form = options.form()
+	} else {
+		form = url.Values{}
+	}
+
+	form.Set("merchant_uid", muid)
+
+	req, err := http.NewRequest("POST",
+		"https://api.iamport.kr/payments/cancel",
+		bytes.NewBufferString(form.Encode()))
+	if err != nil {
+		return data.Response, err
+	}
+
+	auth, err := cli.authorization()
+	if err != nil {
+		return data.Response, err
+	}
+	req.Header.Set("Authorization", auth)
+
+	res, err := cli.HTTP.Do(req)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if res.StatusCode == http.StatusUnauthorized {
+		return data.Response, errors.New("iamport: unauthorized")
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return data.Response, errors.New("iamport: unknown error")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&data)
+	if err != nil {
+		return data.Response, err
+	}
+
+	if data.Code != 0 {
+		return data.Response, fmt.Errorf("iamport: %s", data.Message)
+	}
+
+	return data.Response, nil
+}
