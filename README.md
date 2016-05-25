@@ -35,12 +35,12 @@ https://api.iamport.kr
   - POST /payments/cancel
 - payments.validation
   - POST /payments/prepare
-  - GET /payments/prepare/merchant_uid
+  - GET /payments/prepare/{merchant_uid}
 
 ### 미구현
 
 - subscribe
-  - POST /subscribe/payments/ontime
+  - POST /subscribe/payments/onetime
   - POST /subscribe/payments/again
   - POST /subscribe/payments/schedule
   - POST /subscribe/payments/unschedule
