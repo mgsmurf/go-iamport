@@ -98,13 +98,14 @@ type Payment struct {
 	PGTID         string `json:"pg_tid"`
 	ApplyNum      string `json:"apply_num"`
 	CardName      string `json:"card_name"`
-	CardQuota     int    `json:"card_quota"`
+	CardQuota     int64  `json:"card_quota"`
 	VBankName     string `json:"vbank_name"`
 	VBankNum      string `json:"vbank_num"`
 	VBankHolder   string `json:"vbank_holder"`
+	VBankDate     int64  `json:"vbank_date"`
 	Name          string `json:"name"`
 	Amount        int64  `json:"amount"`
-	CancelAmount  string `json:"cancel_amount"`
+	CancelAmount  int64  `json:"cancel_amount"`
 	BuyerName     string `json:"buyer_name"`
 	BuyerEmail    string `json:"buyer_email"`
 	BuyerTel      string `json:"buyer_tel"`
