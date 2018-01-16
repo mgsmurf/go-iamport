@@ -104,7 +104,7 @@ type Payment struct {
 	VBankHolder   string `json:"vbank_holder"`
 	Name          string `json:"name"`
 	Amount        int64  `json:"amount"`
-	CancelAmount  string `json:"cancel_amount"`
+	CancelAmount  int64  `json:"cancel_amount"`
 	BuyerName     string `json:"buyer_name"`
 	BuyerEmail    string `json:"buyer_email"`
 	BuyerTel      string `json:"buyer_tel"`
